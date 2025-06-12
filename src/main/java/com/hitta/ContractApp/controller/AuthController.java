@@ -72,6 +72,8 @@ public class AuthController {
             Users user = authService.register(request, response);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

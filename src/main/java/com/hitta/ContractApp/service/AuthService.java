@@ -51,36 +51,35 @@ public class AuthService {
 
     @Transactional
     public Users register(RegisterRequest request, HttpServletResponse response) {
-        if(userRepo.findIdByEmail(request.getEmail()).isPresent()) throw new RuntimeException("User with that email already exists");
-        if(request.getPassword().length() > 28) throw new RuntimeException("User password length must be shorter or equal to 28 characters");
-        System.out.println(request);
+            if(userRepo.findIdByEmail(request.getEmail()).isPresent()) throw new RuntimeException("User with that email already exists");
+            if(request.getPassword().length() > 28) throw new RuntimeException("User password length must be shorter or equal to 28 characters");
+            System.out.println(request);
 
-        ZoneId userZone = ZoneId.of(request.getTimeZone());
-        LocalDate todayInUserTimezone = LocalDate.now(userZone);
+            var user = Users.builder()
+                    .email(request.getEmail())
+                    .name(request.getName())
+                    .password(encoder.encode(request.getPassword()))
+                    .verificationCode(null)
+                    .verificationCodeExpiresAt(null)
+                    .lastVerificationCodeSentAt(null)
+                    .dateOfBirth(request.getDateOfBirth())
+                    .timeZone(request.getTimeZone())
+                    .emailVerified(false)
+                    .accountLocked(false)
+                    .enabled(true)
+                    .createdDate(LocalDateTime.now())
+                    .build();
 
-        var user = Users.builder()
-                .email(request.getEmail())
-                .name(request.getName())
-                .password(encoder.encode(request.getPassword()))
-                .verificationCode(null)
-                .verificationCodeExpiresAt(null)
-                .lastVerificationCodeSentAt(null)
-                .dateOfBirth(request.getDateOfBirth())
-                .timeZone(request.getTimeZone())
-                .emailVerified(false)
-                .accountLocked(false)
-                .enabled(true)
-                .createdDate(LocalDateTime.now())
-                .build();
+            var savedUser =  userRepo.save(user);
 
-        var savedUser =  userRepo.save(user);
+            AuthResponse authResponse = tokenService.createAccessAndRefreshTokens(savedUser);
+            tokenService.addRefreshTokenCookie(response, authResponse.getRefreshToken());
+            // verificationService.sendVerificationEmail(savedUser);
 
-        AuthResponse authResponse = tokenService.createAccessAndRefreshTokens(savedUser);
-        tokenService.addRefreshTokenCookie(response, authResponse.getRefreshToken());
-        verificationService.sendVerificationEmail(savedUser);
+            return savedUser;
 
-        return savedUser;
     }
+
 
     public AuthResponse authenticate(LoginRequest request, HttpServletResponse response){
         try {

@@ -43,8 +43,6 @@ public class Users implements UserDetails, Principal {
     private LocalDateTime verificationCodeExpiresAt;
     private LocalDateTime lastVerificationCodeSentAt;
     @NotNull
-    private Integer streak;
-    @NotNull
     private String timeZone;
     @CreatedDate
     @Column(nullable = false, updatable = false)
