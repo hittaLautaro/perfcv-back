@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/account/**",
+                                "/api/**", // TODO - REMOVE THIS LATER
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
