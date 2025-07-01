@@ -18,8 +18,12 @@ public class Template {
     private Long id;
 
     @NotBlank
-    private String filename;
+    private String displayName;
 
     @NotBlank
+    private String filename;
+    @NotBlank
     private String filepath;
+    private String previewFilename;
+    private String previewFilepath;
 }

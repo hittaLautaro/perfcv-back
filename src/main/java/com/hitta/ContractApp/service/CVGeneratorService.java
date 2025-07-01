@@ -2,13 +2,9 @@ package com.hitta.ContractApp.service;
 
 import com.deepoove.poi.XWPFTemplate;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -110,17 +106,6 @@ public class CVGeneratorService {
         }
     }
 
-    public String[] getTemplates() throws IOException {
-        List<String> templateNames = new ArrayList<>();
 
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources("classpath:/templates/*");
-
-        for (Resource resource : resources) {
-            templateNames.add(resource.getFilename());
-        }
-
-        return templateNames.toArray(new String[0]);
-    }
 
 }
