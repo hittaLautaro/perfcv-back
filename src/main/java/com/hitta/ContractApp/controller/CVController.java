@@ -42,7 +42,6 @@ public class CVController {
         }catch(Exception e){
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
-
     }
 
 }

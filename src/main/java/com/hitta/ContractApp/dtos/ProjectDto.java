@@ -2,6 +2,8 @@ package com.hitta.ContractApp.dtos;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,6 +14,6 @@ public class ProjectDto {
     public String since;
     public String till;
     public String description;
-    public String technologies;
+    public List<String> technologies;
     public String github;
 }

@@ -3,6 +3,8 @@ package com.hitta.ContractApp.service;
 import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.config.Configure;
 import com.hitta.ContractApp.dtos.CvFormDto;
+import com.hitta.ContractApp.model.Template;
+import com.hitta.ContractApp.repo.TemplateRepo;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +19,21 @@ import java.util.*;
 @Service
 public class CVGeneratorService {
 
+    private final TemplateRepo templateRepo;
+
+    public CVGeneratorService(TemplateRepo templateRepo){
+        this.templateRepo = templateRepo;
+    }
+
     public byte[] generatePdf(CvFormDto form) throws IOException, InterruptedException {
-        byte[] docBytes = generateCv(form);
+        Template template = templateRepo.findById(form.getSelectedTemplateId()).orElseThrow(() -> new RuntimeException("Template not found"));
+        byte[] docBytes = generateCv(form, template.getFilepath());
         return convertDocxToPdf(docBytes);
     }
 
     public byte[] generateDoc(CvFormDto form) throws IOException {
-        return generateCv(form);
+        Template template = templateRepo.findById(form.getSelectedTemplateId()).orElseThrow(() -> new RuntimeException("Template not found"));
+        return generateCv(form, template.getFilepath());
     }
 
     public byte[] convertDocxToPdf(byte[] docxBytes) throws IOException, InterruptedException {
@@ -34,6 +44,7 @@ public class CVGeneratorService {
         // 2. Create temp docx file
         File tempDocxFile = new File(outputDir, "temp_doc.docx");
         Files.write(tempDocxFile.toPath(), docxBytes);
+
 
         // 3. Run LibreOffice CLI to convert to PDF
         ProcessBuilder pb = new ProcessBuilder(
@@ -59,14 +70,17 @@ public class CVGeneratorService {
         // 5. Cleanup
         tempDocxFile.delete();
         pdfFile.delete();
-        tempDir.toFile().delete();
+        Files.walk(tempDir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
 
         return pdfBytes;
     }
 
 
-    private byte[] generateCv(CvFormDto form) throws IOException {
-        ClassPathResource templateResource = new ClassPathResource("templates/cv_simple_template");
+    private byte[] generateCv(CvFormDto form, String templateFilePath) throws IOException {
+        ClassPathResource templateResource = new ClassPathResource("templates/" + templateFilePath);
 
         Map<String, Object> data = new HashMap<>();
         data.put("me_fullName", form.getFullName());
