@@ -1,5 +1,8 @@
 package com.hitta.ContractApp.model;
 
+import com.hitta.ContractApp.dtos.EducationDto;
+import com.hitta.ContractApp.dtos.ProjectDto;
+import com.hitta.ContractApp.dtos.WorkExperienceDto;
 import lombok.*;
 
 import java.util.List;
@@ -17,9 +20,9 @@ public class CVData {
     public String github;
     public String linkedin;
 
-    public List<WorkExperience> work;
-    public List<Project> projects;
-    public List<Education> education;
+    public List<WorkExperienceDto> work;
+    public List<ProjectDto> projects;
+    public List<EducationDto> education;
 
     public String techs;
     public String skills;

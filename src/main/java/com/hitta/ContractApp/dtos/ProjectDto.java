@@ -1,4 +1,4 @@
-package com.hitta.ContractApp.model;
+package com.hitta.ContractApp.dtos;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Project {
+public class ProjectDto {
     public String name;
     public String since;
     public String till;
