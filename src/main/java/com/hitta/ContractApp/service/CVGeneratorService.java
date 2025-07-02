@@ -7,36 +7,75 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @Service
 public class CVGeneratorService {
 
-    public byte[] generatePdf(CvFormDto form) throws IOException{
+    public byte[] generatePdf(CvFormDto form) throws IOException, InterruptedException {
         byte[] docBytes = generateCv(form);
-        return convertDocToPdf(docBytes);
+        return convertDocxToPdf(docBytes);
     }
 
     public byte[] generateDoc(CvFormDto form) throws IOException {
         return generateCv(form);
     }
 
-    private byte[] convertDocToPdf(byte[] docBytes){
-        return docBytes;
+    public byte[] convertDocxToPdf(byte[] docxBytes) throws IOException, InterruptedException {
+        // 1. Create temp dir
+        Path tempDir = Files.createTempDirectory("pdfgen");
+        File outputDir = tempDir.toFile();
+
+        // 2. Create temp docx file
+        File tempDocxFile = new File(outputDir, "temp_doc.docx");
+        Files.write(tempDocxFile.toPath(), docxBytes);
+
+        // 3. Run LibreOffice CLI to convert to PDF
+        ProcessBuilder pb = new ProcessBuilder(
+                "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+                "--headless", "--convert-to", "pdf",
+                tempDocxFile.getAbsolutePath(),
+                "--outdir", outputDir.getAbsolutePath()
+        );
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        process.waitFor();
+
+        // 4. Read generated PDF
+        String pdfFileName = tempDocxFile.getName().replaceFirst("\\.docx$", ".pdf");
+        File pdfFile = new File(outputDir, pdfFileName);
+
+        if (!pdfFile.exists()) {
+            throw new FileNotFoundException("PDF conversion failed, output not found.");
+        }
+
+        byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
+
+        // 5. Cleanup
+        tempDocxFile.delete();
+        pdfFile.delete();
+        tempDir.toFile().delete();
+
+        return pdfBytes;
     }
 
+
     private byte[] generateCv(CvFormDto form) throws IOException {
-        ClassPathResource templateResource = new ClassPathResource("templates/cv_template_01.docx");
+        ClassPathResource templateResource = new ClassPathResource("templates/cv_simple_template");
 
         Map<String, Object> data = new HashMap<>();
         data.put("me_fullName", form.getFullName());
         data.put("me_contactEmail", form.getEmail());
         data.put("me_number", form.getPhone());
-        data.put("me_city", "");
-        data.put("me_github", form.getGithub());
-        data.put("me_technologies", String.join(", ", form.getSkills() != null ? form.getSkills() : List.of()));
-        data.put("me_languages", String.join(", ", form.getLanguages() != null ? form.getLanguages() : List.of()));
+        data.put("me_city", (form.getCity() != null && !form.getCity().isEmpty()) ? form.getCity() : null);
+        data.put("me_github", (form.getGithub() != null && !form.getGithub().isEmpty()) ? form.getGithub() : null);
+        data.put("me_technologies", form.getSkills() != null ? String.join(", ", form.getSkills()) : null);
+        data.put("me_languages", form.getSkills() != null ? String.join(", ", form.getLanguages()): null);
 
         // Work experience
         List<Map<String, Object>> workList = new ArrayList<>();
@@ -47,9 +86,10 @@ public class CVGeneratorService {
                 job.put("job_since", exp.getStartDate());
                 job.put("job_till", exp.getEndDate() != null ? exp.getEndDate() : "Present");
                 job.put("job_role", exp.getTitle());
-                job.put("job_modalityOrCity", exp.getLocation() != null ? exp.getLocation() : "");
-                job.put("job_description", exp.getDescription() != null ? exp.getDescription() : "");
-                job.put("job_technologies", String.join(", ", exp.getTechnologies() != null ? exp.getTechnologies() : List.of()));
+                job.put("job_modalityOrCity", exp.getLocation() != null ? exp.getLocation() : null);
+                job.put("job_description", exp.getDescription() != null ? exp.getDescription() : null);
+                job.put("job_technologies", exp.getTechnologies() != null ? String.join(", ", exp.getTechnologies()): null);
+
                 workList.add(job);
             }
         }
@@ -84,14 +124,14 @@ public class CVGeneratorService {
                 projectMap.put("since", project.getSince());
                 projectMap.put("till", project.getTill());
                 projectMap.put("description", project.getDescription());
-                projectMap.put("technologies", project.getTechnologies());
+                projectMap.put("technologies", project.getTechnologies() != null ? String.join(", ", project.getTechnologies()): null);
                 projectMap.put("github", project.getGithub());
                 projectList.add(projectMap);
             }
         }
         System.out.println(projectList);
         data.put("projects", projectList);
-        data.put("porjects_exists", !projectList.isEmpty());
+        data.put("projects_exists", !projectList.isEmpty());
 
         try {
             Configure config = Configure.builder()

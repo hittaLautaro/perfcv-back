@@ -16,8 +16,9 @@ public class CvFormDto {
     @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Phone number is required")
     private String phone;
+
+    private String city;
 
     @NotBlank(message = "Summary is required")
     private String summary;
@@ -29,8 +30,8 @@ public class CvFormDto {
     @NotNull(message = "Template selection is required")
     private Long selectedTemplateId;
 
-    private List<@NotBlank(message = "Skills cannot contain blank items") String> skills;
-    private List<@NotBlank(message = "Languages cannot contain blank items") String> languages;
+    private List<String> skills;
+    private List<String> languages;
 
     private String linkedin;
     private String github;
