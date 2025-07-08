@@ -63,7 +63,6 @@ public class AuthService {
                     .verificationCodeExpiresAt(null)
                     .lastVerificationCodeSentAt(null)
                     .dateOfBirth(request.getDateOfBirth())
-                    .timeZone(request.getTimeZone())
                     .emailVerified(false)
                     .accountLocked(false)
                     .enabled(true)

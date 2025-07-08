@@ -3,9 +3,12 @@ package com.hitta.ContractApp.controller;
 import com.hitta.ContractApp.dtos.AuthResponse;
 import com.hitta.ContractApp.dtos.LoginRequest;
 import com.hitta.ContractApp.dtos.RegisterRequest;
+import com.hitta.ContractApp.dtos.UserResponse;
 import com.hitta.ContractApp.exceptions.InvalidCredentialsException;
+import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.service.AuthService;
+import com.hitta.ContractApp.service.UserDetailsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -231,4 +235,33 @@ public class AuthController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/me")
+    @Operation(
+            summary = "Get current authenticated user",
+            description = "Returns the details of the currently authenticated user based on the access token."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved user details"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized - access token is missing or invalid"
+            )
+    })
+    public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserResponse dto = UserResponse.builder()
+                .id(userDetails.getId())
+                .email(userDetails.getEmail())
+                .build();
+
+        return ResponseEntity.ok(dto);
+    }
+
 }

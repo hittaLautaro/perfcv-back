@@ -33,6 +33,4 @@ public class RegisterRequest {
     @Size(min = 8, message = "Password length must be more or equal to 8 characters")
     @Size(max = 28, message = "Password length must be less or equal to 28 characters")
     private String password;
-    @NotNull
-    private String timeZone;
 }
