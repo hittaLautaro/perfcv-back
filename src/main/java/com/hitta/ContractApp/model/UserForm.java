@@ -25,7 +25,7 @@ public class UserForm {
     private CvFormDto form;
 
     @JsonBackReference
-    @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private Users user;
 }
