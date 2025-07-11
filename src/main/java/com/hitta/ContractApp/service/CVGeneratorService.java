@@ -163,11 +163,20 @@ public class CVGeneratorService {
             template.write(out);
             template.close();
 
-            UserForm userForm = UserForm.builder()
-                    .user(user)
-                    .form(form)
-                    .build();
+            UserForm userForm = user.getUserForm();
+
+            if (userForm == null) {
+                userForm = UserForm.builder()
+                        .user(user)
+                        .form(form)
+                        .build();
+            } else {
+                userForm.setForm(form);
+            }
+
             formRepo.save(userForm);
+
+
 
             return out.toByteArray();
         } catch (Exception e) {
