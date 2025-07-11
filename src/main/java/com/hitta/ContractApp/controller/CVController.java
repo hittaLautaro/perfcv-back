@@ -1,10 +1,12 @@
 package com.hitta.ContractApp.controller;
 
 import com.hitta.ContractApp.dtos.CvFormDto;
+import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.service.CVGeneratorService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,9 +20,9 @@ public class CVController {
     }
 
     @PostMapping("/generate-doc")
-    public ResponseEntity<?> generateDoc(@RequestBody CvFormDto form) {
+    public ResponseEntity<?> generateDoc(@RequestBody CvFormDto form, @AuthenticationPrincipal CustomUserDetails userDetails) {
         try{
-            byte[] docxBytes = cvService.generateDoc(form);
+            byte[] docxBytes = cvService.generateDoc(userDetails.getUser(), form);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=cv.docx")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -32,9 +34,9 @@ public class CVController {
 
 
     @PostMapping("/generate-pdf")
-    public ResponseEntity<?> generatePdf(@RequestBody CvFormDto form) {
+    public ResponseEntity<?> generatePdf(@RequestBody CvFormDto form, @AuthenticationPrincipal CustomUserDetails userDetails) {
         try{
-            byte[] pdfBytes = cvService.generatePdf(form);
+            byte[] pdfBytes = cvService.generatePdf(userDetails.getUser(), form);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=cv.pdf")
                     .contentType(MediaType.APPLICATION_PDF)

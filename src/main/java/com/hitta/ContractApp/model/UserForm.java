@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hitta.ContractApp.dtos.CvFormDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,5 +24,8 @@ public class UserForm {
     @Column(columnDefinition = "json")
     private CvFormDto form;
 
-    private Long userId;
+    @JsonBackReference
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private Users user;
 }

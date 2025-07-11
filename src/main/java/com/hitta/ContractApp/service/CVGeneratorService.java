@@ -4,6 +4,9 @@ import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.config.Configure;
 import com.hitta.ContractApp.dtos.CvFormDto;
 import com.hitta.ContractApp.model.Template;
+import com.hitta.ContractApp.model.UserForm;
+import com.hitta.ContractApp.model.Users;
+import com.hitta.ContractApp.repo.FormRepo;
 import com.hitta.ContractApp.repo.TemplateRepo;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -21,19 +24,22 @@ public class CVGeneratorService {
 
     private final TemplateRepo templateRepo;
 
-    public CVGeneratorService(TemplateRepo templateRepo){
+    private final FormRepo formRepo;
+
+    public CVGeneratorService(TemplateRepo templateRepo, FormRepo formRepo){
+        this.formRepo = formRepo;
         this.templateRepo = templateRepo;
     }
 
-    public byte[] generatePdf(CvFormDto form) throws IOException, InterruptedException {
+    public byte[] generatePdf(Users user, CvFormDto form) throws IOException, InterruptedException {
         Template template = templateRepo.findById(form.getSelectedTemplateId()).orElseThrow(() -> new RuntimeException("Template not found"));
-        byte[] docBytes = generateCv(form, template.getFilepath());
+        byte[] docBytes = generateCv(form, template.getFilepath(), user);
         return convertDocxToPdf(docBytes);
     }
 
-    public byte[] generateDoc(CvFormDto form) throws IOException {
+    public byte[] generateDoc(Users user, CvFormDto form) throws IOException {
         Template template = templateRepo.findById(form.getSelectedTemplateId()).orElseThrow(() -> new RuntimeException("Template not found"));
-        return generateCv(form, template.getFilepath());
+        return generateCv(form, template.getFilepath(), user);
     }
 
     public byte[] convertDocxToPdf(byte[] docxBytes) throws IOException, InterruptedException {
@@ -79,7 +85,7 @@ public class CVGeneratorService {
     }
 
 
-    private byte[] generateCv(CvFormDto form, String templateFilePath) throws IOException {
+    private byte[] generateCv(CvFormDto form, String templateFilePath, Users user) throws IOException {
         ClassPathResource templateResource = new ClassPathResource("templates/" + templateFilePath);
 
         Map<String, Object> data = new HashMap<>();
@@ -156,6 +162,13 @@ public class CVGeneratorService {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             template.write(out);
             template.close();
+
+            UserForm userForm = UserForm.builder()
+                    .user(user)
+                    .form(form)
+                    .build();
+            formRepo.save(userForm);
+
             return out.toByteArray();
         } catch (Exception e) {
             System.err.println("Error processing template: " + e.getMessage());
