@@ -59,6 +59,9 @@ public class Users implements UserDetails, Principal {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Token token;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Draft> drafts;
+
     @Column(nullable = false)
     private boolean emailVerified = false;
 
