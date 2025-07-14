@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface DraftRepo extends JpaRepository<Draft, Long> {
 
     Optional<List<Draft>> findAllByUserId(Long userId);
+
+    void deleteByUserIdAndId(Long userId, Long id);
 }

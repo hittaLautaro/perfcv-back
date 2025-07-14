@@ -23,11 +23,22 @@ public class DraftService {
 
     public List<DraftDto> getDrafts(Users user) {
         var drafts = draftRepo.findAllByUserId((long) user.getId()).orElse(null);
-
         return drafts == null ? new ArrayList<>() : draftMapper.draftsToDraftsDto(drafts);
     }
 
     public void deleteDraft(Users user, Long draftId) {
+        draftRepo.deleteByUserIdAndId((long) user.getId(), draftId);
+    }
 
+    public DraftDto editDraft(Users user, Long id, DraftDto draftDto) {
+        var draft = draftRepo.findById(id).orElseThrow(() -> new RuntimeException("Draft not found"));
+
+        if(draft.getUser().getId() != user.getId()) throw new RuntimeException("Unauthorized to edit this draft");
+
+        var mappedDraft = draftMapper.draftDtoToDraft(draftDto, user);
+
+        var savedDraft = draftRepo.save(mappedDraft);
+
+        return draftMapper.draftToDraftDto(savedDraft);
     }
 }
