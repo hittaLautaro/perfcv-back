@@ -34,7 +34,7 @@ public class Draft {
 
     @ManyToOne
     @JoinColumn(name = "template_id", nullable = false)
-    private Template selectedTemplate;
+    private Template template;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

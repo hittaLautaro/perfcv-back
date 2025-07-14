@@ -21,8 +21,8 @@ public class DraftMapper {
                 .createdAt(draft.getCreatedAt())
                 .updatedAt(draft.getUpdatedAt())
                 .userId((long) draft.getUser().getId())
-                .selectedTemplateId(draft.getSelectedTemplate().getId())
-                .templateDisplayName(draft.getSelectedTemplate().getDisplayName())
+                .selectedTemplateId(draft.getTemplate().getId())
+                .templateDisplayName(draft.getTemplate().getDisplayName())
                 .build();
     }
 }
