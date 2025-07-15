@@ -26,7 +26,10 @@ public class CVGeneratorService {
 
     private final FormRepo formRepo;
 
-    public CVGeneratorService(TemplateRepo templateRepo, FormRepo formRepo){
+    private final DraftService draftService;
+
+    public CVGeneratorService(TemplateRepo templateRepo, FormRepo formRepo, DraftService draftService){
+        this.draftService = draftService;
         this.formRepo = formRepo;
         this.templateRepo = templateRepo;
     }
@@ -176,7 +179,7 @@ public class CVGeneratorService {
 
             formRepo.save(userForm);
 
-
+            draftService.addDraft(user, userForm);
 
             return out.toByteArray();
         } catch (Exception e) {

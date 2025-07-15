@@ -1,6 +1,7 @@
 package com.hitta.ContractApp.mappers;
 
 import com.hitta.ContractApp.dtos.DraftDto;
+import com.hitta.ContractApp.dtos.UpdateDraftDto;
 import com.hitta.ContractApp.model.Draft;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.repo.TemplateRepo;
