@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hitta.ContractApp.dtos.CvFormDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -32,10 +33,12 @@ public class Draft {
     @Column(columnDefinition = "json")
     private CvFormDto form;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "template_id", nullable = false)
     private Template template;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "user_id")
     private Users user;
