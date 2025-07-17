@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.service;
 
+import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.repo.UserRepo;
 import lombok.RequiredArgsConstructor;

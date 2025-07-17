@@ -51,7 +51,7 @@ public class AuthService {
 
     @Transactional
     public Users register(RegisterRequest request, HttpServletResponse response) {
-            if(userRepo.findIdByEmail(request.getEmail()).isPresent()) throw new RuntimeException("User with that email already exists");
+            if(userRepo.existsByEmail(request.getEmail())) throw new RuntimeException("User with that email already exists");
             if(request.getPassword().length() > 28) throw new RuntimeException("User password length must be shorter or equal to 28 characters");
             System.out.println(request);
 
@@ -71,32 +71,32 @@ public class AuthService {
 
             var savedUser =  userRepo.save(user);
 
-            AuthResponse authResponse = tokenService.createAccessAndRefreshTokens(savedUser);
-            tokenService.addRefreshTokenCookie(response, authResponse.getRefreshToken());
-            // verificationService.sendVerificationEmail(savedUser);
+            String refreshToken =  tokenService.createOrUpdateRefreshToken(response, savedUser);
+            tokenService.addRefreshTokenCookie(response, refreshToken);
+
+            // TODO : verificationService.sendVerificationEmail(savedUser);
 
             return savedUser;
 
     }
 
 
-    public AuthResponse authenticate(LoginRequest request, HttpServletResponse response){
-        try {
-            Authentication authentication = authManager
-                    .authenticate(
-                            new UsernamePasswordAuthenticationToken
-                                    (request.getEmail(), request.getPassword()));
+    public AuthResponse authenticate(HttpServletResponse response, LoginRequest request) {
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            Users user = userDetails.getUser();
 
-            AuthResponse authResponse = tokenService.createAccessAndRefreshTokens(user);
-            tokenService.addRefreshTokenCookie(response, authResponse.getRefreshToken());
-            return authResponse;
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String accessToken = jwtService.generateAccessToken(userDetails.getEmail());
+        tokenService.createOrUpdateRefreshToken(response, userDetails.getUser());
 
-        } catch (BadCredentialsException e) {
-            throw new InvalidCredentialsException("Invalid email or password.");
-        }
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .build();
     }
 
 
@@ -111,7 +111,6 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .build();
     }
 

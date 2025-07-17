@@ -30,33 +30,45 @@ public class Users implements UserDetails, Principal {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
     @SequenceGenerator(name = "users_seq", sequenceName = "users_seq", allocationSize = 1)
-    private int id;
+    private Long id;
+
     @Column(unique = true)
     private String email;
+
     @NotNull
     private String name;
+
     private String password;
+
     private LocalDate dateOfBirth;
+
     private boolean accountLocked;
+
     private boolean enabled;
+
     private String verificationCode;
+
     private LocalDateTime verificationCodeExpiresAt;
+
     private LocalDateTime lastVerificationCodeSentAt;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
+
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private VerificationToken verificationToken;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserForm userForm;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Token token;
 
     @JsonManagedReference
@@ -68,7 +80,7 @@ public class Users implements UserDetails, Principal {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
@@ -95,5 +107,4 @@ public class Users implements UserDetails, Principal {
     public String getName() {
         return email;
     }
-
 }

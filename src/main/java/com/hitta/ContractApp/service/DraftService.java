@@ -30,8 +30,8 @@ public class DraftService {
         this.templateRepo = templateRepo;
     }
 
-    public List<DraftDto> getDrafts(Users user) {
-        var drafts = draftRepo.findAllByUserId((long) user.getId()).orElse(null);
+    public List<DraftDto> getDrafts(Long userId) {
+        var drafts = draftRepo.findAllByUserId(userId).orElse(null);
         return drafts == null ? new ArrayList<>() : draftMapper.draftsToDraftsDto(drafts);
     }
 

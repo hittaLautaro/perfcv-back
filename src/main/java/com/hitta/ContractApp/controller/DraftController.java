@@ -24,7 +24,7 @@ public class DraftController {
     @GetMapping
     public ResponseEntity<?> getDrafts(@AuthenticationPrincipal CustomUserDetails userDetails){
         try{
-            return ResponseEntity.ok(draftService.getDrafts(userDetails.getUser()));
+            return ResponseEntity.ok(userDetails.getUser().getDrafts());
         }catch (Exception e){
             return ResponseEntity.internalServerError().build();
         }

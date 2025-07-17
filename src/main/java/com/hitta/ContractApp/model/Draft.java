@@ -34,12 +34,12 @@ public class Draft {
     private CvFormDto form;
 
     @JsonBackReference
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
     private Template template;
 
     @JsonBackReference
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users user;
 

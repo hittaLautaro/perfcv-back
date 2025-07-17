@@ -8,33 +8,30 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 public class CustomUserDetails implements UserDetails {
-    @Getter
+
+    private final Long id;
     private final String email;
-    @Getter
-    private final Users user;
     private final String password;
     private final boolean accountLocked;
-    private final boolean isEnabled;
-    private final List<GrantedAuthority> authorities;
-
+    private final boolean enabled;
+    private final boolean emailVerified;
+    private final Users user;
 
     public CustomUserDetails(Users user) {
-        this.user = user;
+        this.id = user.getId();
         this.email = user.getEmail();
-        this.isEnabled = user.isEnabled();
         this.password = user.getPassword();
         this.accountLocked = user.isAccountLocked();
-        this.authorities = List.of(new SimpleGrantedAuthority("USER"));
-    }
-
-    public Integer getId() {
-        return user.getId();
+        this.enabled = user.isEnabled();
+        this.emailVerified = user.isEmailVerified();
+        this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
@@ -63,8 +60,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public boolean isEnabled(){
-        return isEnabled;
+    public boolean isEnabled() {
+        return enabled;
     }
-
 }

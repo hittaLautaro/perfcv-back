@@ -20,7 +20,7 @@ public class UserService {
         return userRepo.findAll();
     }
 
-    public UserResponse findUserResponseById(Integer id){
+    public UserResponse findUserResponseById(Long id){
         return userRepo.findUserInfoById(id).orElse(null);
     }
 

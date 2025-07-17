@@ -8,7 +8,6 @@ import com.hitta.ContractApp.exceptions.InvalidCredentialsException;
 import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.service.AuthService;
-import com.hitta.ContractApp.service.UserDetailsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -76,8 +75,6 @@ public class AuthController {
             Users user = authService.register(request, response);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
@@ -118,10 +115,10 @@ public class AuthController {
             @RequestBody @Valid LoginRequest request,
             @Parameter(hidden = true) HttpServletResponse response) {
         try {
-            AuthResponse authResponse = authService.authenticate(request, response);
+            AuthResponse authResponse = authService.authenticate(response, request);
             return ResponseEntity.ok()
                     .body(authResponse);
-        } catch (InvalidCredentialsException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
         }

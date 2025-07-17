@@ -128,10 +128,9 @@ public class VerificationService {
         user.setEmailVerified(true);
         userRepo.save(user);
 
-        var authResponse = tokenService.createAccessAndRefreshTokens(user);
         vt.setLastSentAt(LocalDateTime.now());
         verificationTokenRepo.save(vt);
-        tokenService.addRefreshTokenCookie(response, authResponse.getRefreshToken());
+        tokenService.createOrUpdateRefreshToken(response, user);
     }
 
 

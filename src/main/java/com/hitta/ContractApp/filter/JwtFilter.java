@@ -1,7 +1,7 @@
 package com.hitta.ContractApp.filter;
 
 import com.hitta.ContractApp.service.JwtService;
-import com.hitta.ContractApp.service.UserDetailsServiceImpl;
+import com.hitta.ContractApp.service.CustomUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
-                UserDetails userDetails = context.getBean(UserDetailsServiceImpl.class).loadUserByUsername(username);
+                UserDetails userDetails = context.getBean(CustomUserDetailsService.class).loadUserByUsername(username);
 
                 if(jwtService.validateToken(token, userDetails)){
                     var authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

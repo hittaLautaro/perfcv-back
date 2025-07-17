@@ -29,7 +29,7 @@ public class DraftMapper {
                 .title(draft.getTitle())
                 .createdAt(draft.getCreatedAt())
                 .updatedAt(draft.getUpdatedAt())
-                .userId((long) draft.getUser().getId())
+                .userId(draft.getUser().getId())
                 .selectedTemplateId(draft.getTemplate().getId())
                 .templateDisplayName(draft.getTemplate().getDisplayName())
                 .build();

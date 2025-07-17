@@ -1,7 +1,7 @@
 package com.hitta.ContractApp.config;
 
 import com.hitta.ContractApp.filter.JwtFilter;
-import com.hitta.ContractApp.service.UserDetailsServiceImpl;
+import com.hitta.ContractApp.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +29,7 @@ public class SecurityConfig {
     private String frontUrl;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsServiceImpl;
+    private CustomUserDetailsService userDetailsServiceImpl;
 
     @Autowired
     private JwtFilter jwtFilter;

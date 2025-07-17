@@ -26,17 +26,7 @@ public class TokenService {
         this.tokenRepo = tokenRepo;
     }
 
-    public AuthResponse createAccessAndRefreshTokens(Users user){
-        String accessToken = jwtService.generateAccessToken(user.getEmail());
-        String refreshToken = createOrUpdateRefreshToken(user);
-
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
-
-    public String createOrUpdateRefreshToken(Users user) {
+    public String createOrUpdateRefreshToken(HttpServletResponse response, Users user) {
         Optional<Token> optionalToken = tokenRepo.findByUser(user);
 
         var tokenValue = jwtService.generateRefreshToken();
@@ -59,6 +49,9 @@ public class TokenService {
         }
 
         tokenRepo.save(token);
+
+        addRefreshTokenCookie(response, token.getToken());
+
         return tokenValue;
     }
 
