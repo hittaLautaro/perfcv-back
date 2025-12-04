@@ -20,6 +20,7 @@ public class TemplateService {
 
     private final TemplateRepo templateRepo;
     private final S3Service s3Service;
+    private final PdfToImageService pdfToImageService;
 
     public List<Map<String, Object>> getAllTemplates() {
         List<Template> templates = templateRepo.findByIsActiveTrue();
@@ -70,12 +71,27 @@ public class TemplateService {
                 .isActive(true)
                 .build();
 
-        // Upload files to S3
-        String previewKey = s3Service.uploadFile(previewImage, "previews");
+        // Upload PDF to S3
         String pdfKey = s3Service.uploadFile(pdfFile, "templates");
-
-        template.setPreviewImageS3Key(previewKey);
         template.setTemplatePdfS3Key(pdfKey);
+
+        // Upload preview image to S3 (either provided or auto-generated)
+        String previewKey;
+        if (previewImage != null && !previewImage.isEmpty()) {
+            log.info("Using provided preview image");
+            previewKey = s3Service.uploadFile(previewImage, "previews");
+        } else {
+            log.info("No preview image provided, generating from PDF");
+            try {
+                byte[] imageBytes = pdfToImageService.convertFirstPageToImage(pdfFile);
+                previewKey = s3Service.uploadBytes(imageBytes, "previews", "image/png", ".png");
+                log.info("Successfully generated preview from PDF");
+            } catch (Exception e) {
+                log.error("Failed to generate preview from PDF", e);
+                throw new RuntimeException("Failed to generate preview image from PDF: " + e.getMessage(), e);
+            }
+        }
+        template.setPreviewImageS3Key(previewKey);
 
         return templateRepo.save(template);
     }

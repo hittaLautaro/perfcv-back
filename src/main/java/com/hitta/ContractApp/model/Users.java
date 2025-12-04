@@ -42,6 +42,11 @@ public class Users implements UserDetails, Principal {
 
     private LocalDate dateOfBirth;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
+
     private boolean accountLocked;
 
     private boolean enabled;
@@ -72,7 +77,7 @@ public class Users implements UserDetails, Principal {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

@@ -54,6 +54,28 @@ public class S3Service {
         }
     }
 
+    public String uploadBytes(byte[] fileBytes, String folder, String contentType, String fileExtension) {
+        try {
+            String fileName = UUID.randomUUID() + fileExtension;
+            String key = folder + "/" + fileName;
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .contentType(contentType)
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
+
+            log.info("file uploaded to S3: {}", key);
+            return key;
+
+        } catch (Exception e) {
+            log.error("error uploading bytes to S3", e);
+            throw new RuntimeException("Failed to upload bytes to S3", e);
+        }
+    }
+
     public String generatePresignedUrl(String key) {
         return generatePresignedUrl(key, Duration.ofMinutes(15));
     }
