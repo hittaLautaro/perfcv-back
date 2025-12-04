@@ -65,15 +65,7 @@ public class Users implements UserDetails, Principal {
 
     @JsonManagedReference
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserForm userForm;
-
-    @JsonManagedReference
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Token token;
-
-    @JsonManagedReference
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Draft> drafts;
 
     @Column(nullable = false)
     private boolean emailVerified = false;

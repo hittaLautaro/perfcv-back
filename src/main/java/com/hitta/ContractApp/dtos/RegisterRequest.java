@@ -17,7 +17,6 @@ import java.time.LocalDate;
 @ToString
 @Builder
 public class RegisterRequest {
-    @NotNull(message = "Date is mandatory")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
     @NotNull(message = "Email is mandatory")

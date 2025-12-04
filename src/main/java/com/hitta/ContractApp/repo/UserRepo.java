@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepo extends JpaRepository<Users, Long> {
 
-    @EntityGraph(attributePaths = {"drafts", "userForm","token", "verificationToken"})
+    @EntityGraph(attributePaths = {"token", "verificationToken"})
     Optional<Users> findByEmail(String email);
 
     @Query("SELECT new com.hitta.ContractApp.dtos.UserResponse(u.id, u.name, u.email) FROM Users u WHERE u.id = :id")
