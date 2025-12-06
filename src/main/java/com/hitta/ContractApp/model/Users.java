@@ -47,6 +47,11 @@ public class Users implements UserDetails, Principal {
     @Builder.Default
     private Role role = Role.USER;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private AuthProvider provider = AuthProvider.LOCAL;
+
     private boolean accountLocked;
 
     private boolean enabled;

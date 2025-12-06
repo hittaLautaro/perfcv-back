@@ -59,6 +59,7 @@ public class AuthService {
                     .email(request.getEmail())
                     .name(request.getName())
                     .password(encoder.encode(request.getPassword()))
+                    .provider(AuthProvider.LOCAL)
                     .verificationCode(null)
                     .verificationCodeExpiresAt(null)
                     .lastVerificationCodeSentAt(null)
@@ -74,7 +75,7 @@ public class AuthService {
             String refreshToken =  tokenService.createOrUpdateRefreshToken(response, savedUser);
             tokenService.addRefreshTokenCookie(response, refreshToken);
 
-            // TODO : verificationService.sendVerificationEmail(savedUser);
+            verificationService.sendVerificationEmail(savedUser);
 
             return savedUser;
 

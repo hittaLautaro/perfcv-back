@@ -1,6 +1,8 @@
 package com.hitta.ContractApp.config;
 
 import com.hitta.ContractApp.filter.JwtFilter;
+import com.hitta.ContractApp.handlers.OAuth2AuthenticationFailureHandler;
+import com.hitta.ContractApp.handlers.OAuth2AuthenticationSuccessHandler;
 import com.hitta.ContractApp.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,12 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+
+    @Autowired
+    private OAuth2AuthenticationFailureHandler oauth2FailureHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
@@ -59,11 +67,16 @@ public class SecurityConfig {
                                 "/api/health",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/oauth2/**"
+                                "/api/oauth2/**",
+                                "/api/account/**"
                         )
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oauth2SuccessHandler)
+                        .failureHandler(oauth2FailureHandler)
+                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 

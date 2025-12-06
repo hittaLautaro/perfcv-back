@@ -55,7 +55,15 @@ public class TokenService {
         return tokenValue;
     }
 
+    public AuthResponse createAccessAndRefreshTokens(HttpServletResponse response, Users user) {
+        String accessToken = jwtService.generateAccessToken(user.getEmail());
+        String refreshToken = createOrUpdateRefreshToken(response, user);
 
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 
     public void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
