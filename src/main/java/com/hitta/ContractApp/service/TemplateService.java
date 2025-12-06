@@ -38,26 +38,35 @@ public class TemplateService {
     }
 
     @Transactional
-    public String getTemplateDownloadUrl(Long id) {
+    public String getTemplateDownloadUrl(Long id, String format) {
         Template template = templateRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Template not found"));
 
         template.setDownloadCount(template.getDownloadCount() + 1);
         templateRepo.save(template);
 
-        return s3Service.generatePresignedUrl(
-                template.getTemplatePdfS3Key(),
-                Duration.ofHours(1)
-        );
+        String s3Key = switch(format.toLowerCase()) {
+            case "docx" -> {
+                if (template.getTemplateDocxS3Key() == null) {
+                    throw new RuntimeException("DOCX format not available for this template");
+                }
+                yield template.getTemplateDocxS3Key();
+            }
+            case "pdf" -> template.getTemplatePdfS3Key();
+            default -> throw new RuntimeException("Unsupported format: " + format);
+        };
+
+        return s3Service.generatePresignedUrl(s3Key, Duration.ofHours(1));
     }
 
     @Transactional
     public Template uploadTemplate(
             String name,
             String description,
-            String category,
+            String[] categories,
             MultipartFile previewImage,
             MultipartFile pdfFile,
+            MultipartFile docxFile,
             Boolean isPremium,
             String price
     ) {
@@ -65,7 +74,7 @@ public class TemplateService {
         Template template = Template.builder()
                 .name(name)
                 .description(description)
-                .category(category)
+                .categories(categories != null ? List.of(categories) : new java.util.ArrayList<>())
                 .isPremium(isPremium != null ? isPremium : false)
                 .price(price != null && !price.trim().isEmpty() ? new java.math.BigDecimal(price) : null)
                 .isActive(true)
@@ -74,6 +83,13 @@ public class TemplateService {
         // Upload PDF to S3
         String pdfKey = s3Service.uploadFile(pdfFile, "templates");
         template.setTemplatePdfS3Key(pdfKey);
+
+        // Upload DOCX to S3 if provided
+        if (docxFile != null && !docxFile.isEmpty()) {
+            log.info("Uploading DOCX file");
+            String docxKey = s3Service.uploadFile(docxFile, "templates");
+            template.setTemplateDocxS3Key(docxKey);
+        }
 
         // Upload preview image to S3 (either provided or auto-generated)
         String previewKey;
@@ -104,6 +120,9 @@ public class TemplateService {
         // Delete files from S3
         s3Service.deleteFile(template.getPreviewImageS3Key());
         s3Service.deleteFile(template.getTemplatePdfS3Key());
+        if (template.getTemplateDocxS3Key() != null) {
+            s3Service.deleteFile(template.getTemplateDocxS3Key());
+        }
 
         // Delete from database
         templateRepo.delete(template);
@@ -123,7 +142,7 @@ public class TemplateService {
         result.put("id", template.getId());
         result.put("name", template.getName());
         result.put("description", template.getDescription());
-        result.put("category", template.getCategory());
+        result.put("categories", template.getCategories());
         result.put("isPremium", template.getIsPremium());
         result.put("price", template.getPrice());
         result.put("downloadCount", template.getDownloadCount());
@@ -132,6 +151,14 @@ public class TemplateService {
         // Generate preview url (valid for 15 minutes)
         String previewUrl = s3Service.generatePresignedUrl(template.getPreviewImageS3Key());
         result.put("previewUrl", previewUrl);
+
+        // Add available formats
+        List<String> availableFormats = new java.util.ArrayList<>();
+        availableFormats.add("pdf");
+        if (template.getTemplateDocxS3Key() != null) {
+            availableFormats.add("docx");
+        }
+        result.put("availableFormats", availableFormats);
 
         return result;
     }

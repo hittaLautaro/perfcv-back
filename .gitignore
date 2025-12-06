@@ -17,6 +17,7 @@ target/
 *.iml
 *.ipr
 
+CLAUDE.md
 NUL
 
 /nbproject/private/

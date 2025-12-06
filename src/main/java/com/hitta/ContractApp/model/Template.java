@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,13 +31,19 @@ public class Template {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private String category;
+    @ElementCollection
+    @CollectionTable(name = "template_categories", joinColumns = @JoinColumn(name = "template_id"))
+    @Column(name = "category")
+    private List<String> categories;
 
     @NotBlank(message = "Preview image S3 key is required")
     private String previewImageS3Key;
 
     @NotBlank(message = "Template PDF S3 key is required")
     private String templatePdfS3Key;
+
+    @NotBlank(message = "Template DOCX S3 key is required")
+    private String templateDocxS3Key;
 
     @NotNull
     @Builder.Default

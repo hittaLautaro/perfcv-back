@@ -27,8 +27,11 @@ public class TemplateController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<Map<String, String>> getDownloadUrl(@PathVariable Long id) {
-        String downloadUrl = templateService.getTemplateDownloadUrl(id);
+    public ResponseEntity<Map<String, String>> getDownloadUrl(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "pdf") String format
+    ) {
+        String downloadUrl = templateService.getTemplateDownloadUrl(id, format);
         return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));
     }
 }
