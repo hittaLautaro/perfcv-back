@@ -13,12 +13,14 @@ target/
 .sts4-cache
 
 .idea
+.claude
 *.iws
 *.iml
 *.ipr
 
 CLAUDE.md
 NUL
+
 
 /nbproject/private/
 /nbbuild/

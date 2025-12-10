@@ -75,8 +75,6 @@ public class TemplateService {
                 .name(name)
                 .description(description)
                 .categories(categories != null ? List.of(categories) : new java.util.ArrayList<>())
-                .isPremium(isPremium != null ? isPremium : false)
-                .price(price != null && !price.trim().isEmpty() ? new java.math.BigDecimal(price) : null)
                 .isActive(true)
                 .build();
 
@@ -143,8 +141,6 @@ public class TemplateService {
         result.put("name", template.getName());
         result.put("description", template.getDescription());
         result.put("categories", template.getCategories());
-        result.put("isPremium", template.getIsPremium());
-        result.put("price", template.getPrice());
         result.put("downloadCount", template.getDownloadCount());
         result.put("createdAt", template.getCreatedAt());
 

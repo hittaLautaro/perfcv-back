@@ -45,12 +45,6 @@ public class Template {
     @NotBlank(message = "Template DOCX S3 key is required")
     private String templateDocxS3Key;
 
-    @NotNull
-    @Builder.Default
-    private Boolean isPremium = false;
-
-    private BigDecimal price;
-
     @Builder.Default
     private Integer downloadCount = 0;
 

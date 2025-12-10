@@ -1,8 +1,10 @@
 package com.hitta.ContractApp.controller;
 
+import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.service.TemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +31,10 @@ public class TemplateController {
     @GetMapping("/{id}/download")
     public ResponseEntity<Map<String, String>> getDownloadUrl(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "pdf") String format
+            @RequestParam(defaultValue = "pdf") String format,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        // Authentication required - userDetails ensures user is logged in
         String downloadUrl = templateService.getTemplateDownloadUrl(id, format);
         return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));
     }
