@@ -5,9 +5,9 @@ spring:
     application:
         name: ContractMaker
     datasource:
-        url: jdbc:postgresql://localhost:5432/contractmakerdb
-        username: postgres
-        password: 2471
+        url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/contractmakerdb}
+        username: ${DB_USERNAME:postgres}
+        password: ${DB_PASSWORD:2471}
     jpa:
         hibernate:
             ddl-auto: update
