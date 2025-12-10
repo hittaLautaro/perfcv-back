@@ -1,5 +1,5 @@
-# Use OpenJDK 17 as base image (adjust version based on your project)
-FROM openjdk:17-jdk-slim
+# Use Eclipse Temurin (official OpenJDK successor)
+FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 COPY mvnw .
 COPY .mvn .mvn
