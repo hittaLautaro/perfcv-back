@@ -31,11 +31,6 @@ public class Template {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ElementCollection
-    @CollectionTable(name = "template_categories", joinColumns = @JoinColumn(name = "template_id"))
-    @Column(name = "category")
-    private List<String> categories;
-
     @NotBlank(message = "Preview image S3 key is required")
     private String previewImageS3Key;
 

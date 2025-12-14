@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.controller;
 
+import com.hitta.ContractApp.dtos.TemplateResponse;
 import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.service.TemplateService;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,14 @@ public class TemplateController {
     private final TemplateService templateService;
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllTemplates() {
-        List<Map<String, Object>> templates = templateService.getAllTemplates();
+    public ResponseEntity<List<TemplateResponse>> getAllTemplates() {
+        List<TemplateResponse> templates = templateService.getAllTemplates();
         return ResponseEntity.ok(templates);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getTemplateById(@PathVariable Long id) {
-        Map<String, Object> template = templateService.getTemplateById(id);
+    public ResponseEntity<TemplateResponse> getTemplateById(@PathVariable Long id) {
+        TemplateResponse template = templateService.getTemplateById(id);
         return ResponseEntity.ok(template);
     }
 
@@ -34,7 +35,6 @@ public class TemplateController {
             @RequestParam(defaultValue = "pdf") String format,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        // Authentication required - userDetails ensures user is logged in
         String downloadUrl = templateService.getTemplateDownloadUrl(id, format);
         return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));
     }

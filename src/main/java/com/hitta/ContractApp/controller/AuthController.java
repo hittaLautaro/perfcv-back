@@ -1,9 +1,6 @@
 package com.hitta.ContractApp.controller;
 
-import com.hitta.ContractApp.dtos.AuthResponse;
-import com.hitta.ContractApp.dtos.LoginRequest;
-import com.hitta.ContractApp.dtos.RegisterRequest;
-import com.hitta.ContractApp.dtos.UserResponse;
+import com.hitta.ContractApp.dtos.*;
 import com.hitta.ContractApp.exceptions.InvalidCredentialsException;
 import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.model.Users;
@@ -73,7 +70,12 @@ public class AuthController {
             @Parameter(hidden = true) HttpServletResponse response) {
         try {
             Users user = authService.register(request, response);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(
+                    SignupResponse.builder()
+                            .name(user.getName())
+                            .email(user.getEmail())
+                            .build()
+            );
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

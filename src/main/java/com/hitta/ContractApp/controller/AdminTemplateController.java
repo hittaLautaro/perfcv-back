@@ -21,14 +21,11 @@ public class AdminTemplateController {
             @RequestParam("name") String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "categories", required = false) String[] categories,
-            @RequestParam(value = "previewImage", required = false) MultipartFile previewImage,
             @RequestParam("pdfFile") MultipartFile pdfFile,
-            @RequestParam("docxFile") MultipartFile docxFile,
-            @RequestParam(value = "isPremium", required = false) Boolean isPremium,
-            @RequestParam(value = "price", required = false) String price
+            @RequestParam("docxFile") MultipartFile docxFile
     ) {
         Template template = templateService.uploadTemplate(
-                name, description, categories, previewImage, pdfFile, docxFile, isPremium, price
+                name, description, pdfFile, docxFile
         );
         return ResponseEntity.ok(template);
     }

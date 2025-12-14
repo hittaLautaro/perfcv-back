@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.controller;
 
+import com.hitta.ContractApp.exceptions.ResourceNotFoundException;
 import com.hitta.ContractApp.model.Role;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.repo.UserRepo;
@@ -26,7 +27,7 @@ public class AdminUserController {
             @RequestParam("role") String role
     ) {
         Users user = userRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         try {
             Role newRole = Role.valueOf(role.toUpperCase());
@@ -52,7 +53,7 @@ public class AdminUserController {
             @RequestParam("role") String role
     ) {
         Users user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         try {
             Role newRole = Role.valueOf(role.toUpperCase());

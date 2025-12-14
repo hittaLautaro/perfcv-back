@@ -3,6 +3,7 @@ package com.hitta.ContractApp.service;
 import com.hitta.ContractApp.exceptions.AlreadyVerifiedException;
 import com.hitta.ContractApp.exceptions.ExpiredTokenException;
 import com.hitta.ContractApp.exceptions.InvalidTokenException;
+import com.hitta.ContractApp.exceptions.ResourceNotFoundException;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.model.VerificationToken;
 import com.hitta.ContractApp.repo.UserRepo;
@@ -50,7 +51,7 @@ public class VerificationService {
     @Transactional
     public void resendVerificationEmail(String token) {
         try{
-            VerificationToken oldToken = verificationTokenRepo.findByToken(token).orElseThrow(() -> new RuntimeException("Token doesn't exist"));
+            VerificationToken oldToken = verificationTokenRepo.findByToken(token).orElseThrow(() -> new InvalidTokenException("Token doesn't exist"));
             Users user = oldToken.getUser();
 
             VerificationToken savedToken = verificationTokenRepo.save(new VerificationToken(user, 15));
@@ -137,14 +138,14 @@ public class VerificationService {
     @Transactional
     public void deleteAccountWithToken(HttpServletResponse response, String token) {
         VerificationToken vt = verificationTokenRepo.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid token"));
 
         if (vt.isExpired()) {
             verificationTokenRepo.delete(vt);
-            throw new RuntimeException("Token expired");
+            throw new ExpiredTokenException("Token expired");
         }
 
-        Users user = userRepo.findById(vt.getUser().getId()).orElseThrow(() -> new RuntimeException("Verficiation Token has no user"));
+        Users user = userRepo.findById(vt.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Verification Token has no user"));
         userRepo.delete(user);
         tokenService.deleteRefreshTokenCookie(response);
     }

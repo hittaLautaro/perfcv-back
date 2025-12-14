@@ -1,5 +1,7 @@
 package com.hitta.ContractApp.service;
 
+import com.hitta.ContractApp.dtos.TemplateResponse;
+import com.hitta.ContractApp.exceptions.ResourceNotFoundException;
 import com.hitta.ContractApp.model.Template;
 import com.hitta.ContractApp.repo.TemplateRepo;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,25 +26,23 @@ public class TemplateService {
     private final S3Service s3Service;
     private final PdfToImageService pdfToImageService;
 
-    public List<Map<String, Object>> getAllTemplates() {
-        List<Template> templates = templateRepo.findByIsActiveTrue();
-
-        return templates.stream()
-                .map(this::mapTemplateWithPreviewUrl)
-                .toList();
+    public List<TemplateResponse> getAllTemplates() {
+        List<Template> foundTemplates = templateRepo.findByIsActiveTrue();
+        List<TemplateResponse> responses = templatesToTemplateResponses(foundTemplates);
+        return responses;
     }
 
-    public Map<String, Object> getTemplateById(Long id) {
+    public TemplateResponse getTemplateById(Long id) {
         Template template = templateRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + id));
 
-        return mapTemplateWithPreviewUrl(template);
+        return templateToTemplateResponse(template);
     }
 
     @Transactional
     public String getTemplateDownloadUrl(Long id, String format) {
         Template template = templateRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + id));
 
         template.setDownloadCount(template.getDownloadCount() + 1);
         templateRepo.save(template);
@@ -48,12 +50,12 @@ public class TemplateService {
         String s3Key = switch(format.toLowerCase()) {
             case "docx" -> {
                 if (template.getTemplateDocxS3Key() == null) {
-                    throw new RuntimeException("DOCX format not available for this template");
+                    throw new ResourceNotFoundException("DOCX format not available for this template");
                 }
                 yield template.getTemplateDocxS3Key();
             }
             case "pdf" -> template.getTemplatePdfS3Key();
-            default -> throw new RuntimeException("Unsupported format: " + format);
+            default -> throw new IllegalArgumentException("Unsupported format: " + format + ". Supported formats: pdf, docx");
         };
 
         return s3Service.generatePresignedUrl(s3Key, Duration.ofHours(1));
@@ -63,18 +65,13 @@ public class TemplateService {
     public Template uploadTemplate(
             String name,
             String description,
-            String[] categories,
-            MultipartFile previewImage,
             MultipartFile pdfFile,
-            MultipartFile docxFile,
-            Boolean isPremium,
-            String price
+            MultipartFile docxFile
     ) {
 
         Template template = Template.builder()
                 .name(name)
                 .description(description)
-                .categories(categories != null ? List.of(categories) : new java.util.ArrayList<>())
                 .isActive(true)
                 .build();
 
@@ -91,19 +88,15 @@ public class TemplateService {
 
         // Upload preview image to S3 (either provided or auto-generated)
         String previewKey;
-        if (previewImage != null && !previewImage.isEmpty()) {
-            log.info("Using provided preview image");
-            previewKey = s3Service.uploadFile(previewImage, "previews");
-        } else {
-            log.info("No preview image provided, generating from PDF");
-            try {
-                byte[] imageBytes = pdfToImageService.convertFirstPageToImage(pdfFile);
-                previewKey = s3Service.uploadBytes(imageBytes, "previews", "image/png", ".png");
-                log.info("Successfully generated preview from PDF");
-            } catch (Exception e) {
-                log.error("Failed to generate preview from PDF", e);
-                throw new RuntimeException("Failed to generate preview image from PDF: " + e.getMessage(), e);
-            }
+
+        log.info("No preview image provided, generating from PDF");
+        try {
+            byte[] imageBytes = pdfToImageService.convertFirstPageToImage(pdfFile);
+            previewKey = s3Service.uploadBytes(imageBytes, "previews", "image/png", ".png");
+            log.info("Successfully generated preview from PDF");
+        } catch (Exception e) {
+            log.error("Failed to generate preview from PDF", e);
+            throw new RuntimeException("Failed to generate preview image from PDF: " + e.getMessage(), e);
         }
         template.setPreviewImageS3Key(previewKey);
 
@@ -113,7 +106,7 @@ public class TemplateService {
     @Transactional
     public void deleteTemplate(Long id) {
         Template template = templateRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + id));
 
         // Delete files from S3
         s3Service.deleteFile(template.getPreviewImageS3Key());
@@ -129,33 +122,32 @@ public class TemplateService {
     @Transactional
     public void deactivateTemplate(Long id) {
         Template template = templateRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Template not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + id));
 
         template.setIsActive(false);
         templateRepo.save(template);
     }
 
-    private Map<String, Object> mapTemplateWithPreviewUrl(Template template) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", template.getId());
-        result.put("name", template.getName());
-        result.put("description", template.getDescription());
-        result.put("categories", template.getCategories());
-        result.put("downloadCount", template.getDownloadCount());
-        result.put("createdAt", template.getCreatedAt());
+    private List<TemplateResponse> templatesToTemplateResponses(List<Template> foundTemplates) {
+        return foundTemplates.stream()
+                .map(this::templateToTemplateResponse)
+                .toList();
+    }
+
+    private TemplateResponse templateToTemplateResponse(Template template) {
+        var res = TemplateResponse.builder()
+                .id(template.getId())
+                .name(template.getName())
+                .description(template.getDescription())
+                .downloadCount(template.getDownloadCount())
+                .build();
+
 
         // Generate preview url (valid for 15 minutes)
         String previewUrl = s3Service.generatePresignedUrl(template.getPreviewImageS3Key());
-        result.put("previewUrl", previewUrl);
 
-        // Add available formats
-        List<String> availableFormats = new java.util.ArrayList<>();
-        availableFormats.add("pdf");
-        if (template.getTemplateDocxS3Key() != null) {
-            availableFormats.add("docx");
-        }
-        result.put("availableFormats", availableFormats);
+        res.setPreviewUrl(previewUrl);
 
-        return result;
+        return res;
     }
 }
