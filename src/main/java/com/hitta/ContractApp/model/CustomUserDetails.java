@@ -13,6 +13,7 @@ public class CustomUserDetails implements UserDetails {
 
     private final Long id;
     private final String email;
+    private final String name;
     private final String password;
     private final boolean accountLocked;
     private final boolean enabled;
@@ -25,6 +26,7 @@ public class CustomUserDetails implements UserDetails {
         this.password = user.getPassword();
         this.accountLocked = user.isAccountLocked();
         this.enabled = user.isEnabled();
+        this.name = user.getName();
         this.emailVerified = user.isEmailVerified();
         this.user = user;
     }
