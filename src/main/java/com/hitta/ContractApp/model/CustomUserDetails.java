@@ -18,7 +18,7 @@ public class CustomUserDetails implements UserDetails {
     private final boolean accountLocked;
     private final boolean enabled;
     private final boolean emailVerified;
-    private final Users user;
+    private final Role role;
 
     public CustomUserDetails(Users user) {
         this.id = user.getId();
@@ -28,12 +28,12 @@ public class CustomUserDetails implements UserDetails {
         this.enabled = user.isEnabled();
         this.name = user.getName();
         this.emailVerified = user.isEmailVerified();
-        this.user = user;
+        this.role = user.getRole();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getAuthorities();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

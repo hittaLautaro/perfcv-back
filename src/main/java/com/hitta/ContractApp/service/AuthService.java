@@ -93,7 +93,11 @@ public class AuthService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String accessToken = jwtService.generateAccessToken(userDetails.getEmail());
-        tokenService.createOrUpdateRefreshToken(response, userDetails.getUser());
+
+        // Fetch user entity for token management
+        Users user = userRepo.findByEmail(userDetails.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        tokenService.createOrUpdateRefreshToken(response, user);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

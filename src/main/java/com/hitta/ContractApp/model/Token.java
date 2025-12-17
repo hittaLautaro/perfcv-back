@@ -27,7 +27,7 @@ public class Token {
     private LocalDateTime validatedAt;
     private boolean revoked;
     @JsonBackReference
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)
     private Users user;
 }

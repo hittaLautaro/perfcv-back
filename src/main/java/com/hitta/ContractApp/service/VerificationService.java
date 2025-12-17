@@ -6,6 +6,7 @@ import com.hitta.ContractApp.exceptions.InvalidTokenException;
 import com.hitta.ContractApp.exceptions.ResourceNotFoundException;
 import com.hitta.ContractApp.model.Users;
 import com.hitta.ContractApp.model.VerificationToken;
+import com.hitta.ContractApp.repo.TokenRepo;
 import com.hitta.ContractApp.repo.UserRepo;
 import com.hitta.ContractApp.repo.VerificationTokenRepo;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ public class VerificationService {
     private final TokenService tokenService;
     private final EmailService emailService;
     private final UserRepo userRepo;
+    private final TokenRepo tokenRepo;
 
     @Value("${FRONTEND_URL}")
     private String frontUrl;
@@ -30,11 +32,13 @@ public class VerificationService {
             VerificationTokenRepo verificationTokenRepo,
             TokenService tokenService,
             EmailService emailService,
-            UserRepo userRepo) {
+            UserRepo userRepo,
+            TokenRepo tokenRepo) {
         this.verificationTokenRepo = verificationTokenRepo;
         this.tokenService = tokenService;
         this.emailService = emailService;
         this.userRepo = userRepo;
+        this.tokenRepo = tokenRepo;
     }
 
     @Transactional
@@ -146,6 +150,10 @@ public class VerificationService {
         }
 
         Users user = userRepo.findById(vt.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Verification Token has no user"));
+
+        verificationTokenRepo.delete(vt);
+        tokenRepo.findByUser(user).ifPresent(tokenRepo::delete);
+
         userRepo.delete(user);
         tokenService.deleteRefreshTokenCookie(response);
     }
