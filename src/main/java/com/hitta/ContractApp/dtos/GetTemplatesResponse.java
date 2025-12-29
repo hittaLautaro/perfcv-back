@@ -14,6 +14,6 @@ public class GetTemplatesResponse {
     private List<TemplateResponse> templates;
     private int page;
     private int limit;
-    private int totalItems;
+    private long totalItems;
     private int totalPages;
 }
