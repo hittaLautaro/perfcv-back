@@ -1,11 +1,15 @@
 package com.hitta.ContractApp.service;
 
+import com.hitta.ContractApp.dtos.GetTemplatesResponse;
 import com.hitta.ContractApp.dtos.TemplateResponse;
 import com.hitta.ContractApp.exceptions.ResourceNotFoundException;
 import com.hitta.ContractApp.model.Template;
 import com.hitta.ContractApp.repo.TemplateRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,10 +30,28 @@ public class TemplateService {
     private final S3Service s3Service;
     private final PdfToImageService pdfToImageService;
 
-    public List<TemplateResponse> getAllTemplates() {
-        List<Template> foundTemplates = templateRepo.findByIsActiveTrue();
-        List<TemplateResponse> responses = templatesToTemplateResponses(foundTemplates);
-        return responses;
+    public GetTemplatesResponse getTemplates(int page, int limit) {
+        int safePage = Math.max(page - 1, 0); // Spring pages are 0-based
+
+        PageRequest pageable = PageRequest.of(
+                safePage,
+                limit,
+                Sort.by("createdAt").descending()
+        );
+
+        Page<Template> result =
+                templateRepo.findByIsActiveTrue(pageable);
+
+        List<TemplateResponse> responses =
+                templatesToTemplateResponses(result.getContent());
+
+        return GetTemplatesResponse.builder()
+                .templates(responses)
+                .page(page)
+                .limit(limit)
+                .totalItems(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .build();
     }
 
     public TemplateResponse getTemplateById(Long id) {

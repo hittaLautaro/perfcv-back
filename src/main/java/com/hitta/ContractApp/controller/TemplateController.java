@@ -1,5 +1,6 @@
 package com.hitta.ContractApp.controller;
 
+import com.hitta.ContractApp.dtos.GetTemplatesResponse;
 import com.hitta.ContractApp.dtos.TemplateResponse;
 import com.hitta.ContractApp.model.CustomUserDetails;
 import com.hitta.ContractApp.service.TemplateService;
@@ -18,16 +19,18 @@ public class TemplateController {
     private final TemplateService templateService;
 
     @GetMapping
-    public ResponseEntity<List<TemplateResponse>> getAllTemplates() {
-        List<TemplateResponse> templates = templateService.getAllTemplates();
-        return ResponseEntity.ok(templates);
+    public ResponseEntity<GetTemplatesResponse> getTemplates(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "6") int limit
+    ) {
+        int safePage = Math.max(page, 1);
+        int safeLimit = Math.min(limit, 6);
+
+        var response = templateService.getTemplates(safePage, safeLimit);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TemplateResponse> getTemplateById(@PathVariable Long id) {
-        TemplateResponse template = templateService.getTemplateById(id);
-        return ResponseEntity.ok(template);
-    }
+
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Map<String, String>> getDownloadUrl(
