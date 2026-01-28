@@ -1,20 +1,48 @@
 services:
+  app:
+    build: .
+    container_name: contractmaker_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - web
+
   postgres:
     image: postgres:16
     container_name: contractmaker_db
-    environment:
-      POSTGRES_DB: contractmakerdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 2471
-    ports:
-      - "5432:5432"
+    restart: unless-stopped
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - web
 
+  nginx:
+    image: nginx:alpine
+    container_name: contractmaker_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - web
+networks:
+  web:
+    external: true
 volumes:
   postgres_data:

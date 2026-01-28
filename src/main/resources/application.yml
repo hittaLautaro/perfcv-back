@@ -5,9 +5,9 @@ spring:
     application:
         name: ContractMaker
     datasource:
-        url: ${DB_URL}
-        username: ${DB_USER}
-        password: ${DB_PASS}
+        url: ${POSTGRES_DB}
+        username: ${POSTGRES_USER}
+        password: ${POSTGRES_PASSWORD}
     jpa:
         hibernate:
             ddl-auto: update
