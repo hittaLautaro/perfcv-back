@@ -20,7 +20,6 @@ public class AdminTemplateController {
     public ResponseEntity<Template> uploadTemplate(
             @RequestParam("name") String name,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "categories", required = false) String[] categories,
             @RequestParam("pdfFile") MultipartFile pdfFile,
             @RequestParam("docxFile") MultipartFile docxFile
     ) {
@@ -40,5 +39,17 @@ public class AdminTemplateController {
     public ResponseEntity<Void> deactivateTemplate(@PathVariable Long id) {
         templateService.deactivateTemplate(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/add-record")
+    public ResponseEntity<Void> addRecord(
+            @RequestParam("name") String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("templateDocxS3Key") String templateDocxS3Key,
+            @RequestParam("templatePdfS3Key") String templatePdfS3Key,
+            @RequestParam("previewImageS3Key") String previewImageS3Key
+            ){
+        templateService.addRecord(name, description, templateDocxS3Key, templatePdfS3Key, previewImageS3Key);
+        return ResponseEntity.accepted().build();
     }
 }

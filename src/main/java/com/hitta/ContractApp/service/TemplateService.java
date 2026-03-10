@@ -172,4 +172,17 @@ public class TemplateService {
 
         return res;
     }
+
+    public void addRecord(String name, String description, String templateDocxS3Key, String templatePdfS3Key, String previewImageS3Key) {
+        var recordTemplate = Template.builder()
+                .name(name)
+                .description(description)
+                .isActive(true)
+                .templateDocxS3Key(templateDocxS3Key)
+                .templatePdfS3Key(templatePdfS3Key)
+                .previewImageS3Key(previewImageS3Key)
+                .build();
+
+        templateRepo.save(recordTemplate);
+    }
 }
