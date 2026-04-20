@@ -120,11 +120,16 @@ public class AuthService {
     }
 
     public void revokeRefreshToken(HttpServletResponse response, String refreshToken) {
-        Token token = tokenRepo.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Refresh token not found when trying to revkoe refresh token"));
-        token.setRevoked(true);
-        tokenRepo.save(token);
+        // Always delete the cookie from the browser, regardless of token validity
         tokenService.deleteRefreshTokenCookie(response);
+
+        // Only revoke the token in the database if it exists
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            tokenRepo.findByToken(refreshToken).ifPresent(token -> {
+                token.setRevoked(true);
+                tokenRepo.save(token);
+            });
+        }
     }
 
     public void changePassword(@Valid LoginRequest request) {
